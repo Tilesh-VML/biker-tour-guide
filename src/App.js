@@ -1,0 +1,531 @@
+// File: src/App.js
+import React, { useState, useRef, useEffect } from 'react';
+
+// Lucide React icons as inline SVGs since the package might not be loading
+const BikeIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="18.5" cy="17.5" r="3.5"/>
+    <circle cx="5.5" cy="17.5" r="3.5"/>
+    <circle cx="15" cy="5" r="1"/>
+    <path d="m14 17 4-10-1.5-2"/>
+    <path d="M6 17h5l1.5-7 2.5-1"/>
+    <path d="M12 14h2l-2-4"/>
+  </svg>
+);
+
+const SendIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="m22 2-7 20-4-9-9-4Z"/>
+    <path d="M22 2 11 13"/>
+  </svg>
+);
+
+const SettingsIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="m12 1 1.27 3.18 3.54 .9-1.27 3.18L19 12l-3.46 3.73-3.54 .9L12 20l-1.27-3.18-3.54-.9L8.46 12.73 5 12l3.46-3.73L12 7.37 12 1z"/>
+  </svg>
+);
+
+const DatabaseIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+    <path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+    <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>
+  </svg>
+);
+
+const App = () => {
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      text: "🏍️ Hey there, fellow rider! I'm your personal biker tour guide. Whether you're looking for scenic routes, biker-friendly stops, or adventure planning, I'm here to help. What kind of riding adventure are you planning?",
+      sender: 'bot',
+      timestamp: new Date().toLocaleTimeString()
+    }
+  ]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [knowledgeBase, setKnowledgeBase] = useState(`PERSONA: You are RoadRider AI, an expert motorcycle tour guide and adventure planner with deep knowledge of biker culture and scenic routes worldwide.
+
+KNOWLEDGE BASE:
+- Popular Biker Routes: Pacific Coast Highway (California), Blue Ridge Parkway (Virginia/North Carolina), Route 66, Tail of the Dragon (Tennessee/North Carolina), Going-to-the-Sun Road (Montana)
+- Biker-Friendly Accommodations: Hotels/motels with secure parking, motorcycle washing stations, gear drying areas
+- Essential Gear: Helmets, protective clothing, weather gear, navigation systems, emergency kits
+- Safety Tips: Weather awareness, group riding etiquette, maintenance checks, emergency procedures
+- Biker Culture: Rally events (Sturgis, Daytona Bike Week), motorcycle types and preferences, community aspects
+- Planning Considerations: Weather patterns, seasonal riding, fuel stops, mechanical services, medical facilities
+
+RESPONSE STYLE:
+- Enthusiastic and knowledgeable about motorcycling
+- Use biker terminology naturally
+- Provide practical, actionable advice
+- Consider safety as top priority
+- Be conversational and engaging
+- Include specific recommendations when possible`);
+
+  const messagesEndRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const adjustTextareaHeight = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+    }
+  };
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [inputMessage]);
+
+  const sendMessage = async () => {
+    if (!inputMessage.trim() || isLoading) return;
+
+    const userMessage = {
+      id: messages.length + 1,
+      text: inputMessage,
+      sender: 'user',
+      timestamp: new Date().toLocaleTimeString()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputMessage('');
+    setIsLoading(true);
+
+    try {
+      const systemPrompt = knowledgeBase + "\n\nUser message: " + inputMessage;
+      const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
+
+      if (!apiKey) {
+        throw new Error('API key not found. Please set REACT_APP_GEMINI_API_KEY in your environment variables.');
+      }
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: systemPrompt
+            }]
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const botResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm having trouble processing that request. Could you try rephrasing?";
+
+      const botMessage = {
+        id: messages.length + 2,
+        text: botResponse,
+        sender: 'bot',
+        timestamp: new Date().toLocaleTimeString()
+      };
+
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error:', error);
+      const errorMessage = {
+        id: messages.length + 2,
+        text: `Sorry, I'm experiencing technical difficulties: ${error.message}`,
+        sender: 'bot',
+        timestamp: new Date().toLocaleTimeString()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const styles = {
+    container: {
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100vh',
+      background: 'linear-gradient(to bottom right, #0f172a, #1e293b)',
+      color: 'white',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    },
+    header: {
+      background: 'rgba(30, 41, 59, 0.5)',
+      backdropFilter: 'blur(8px)',
+      borderBottom: '1px solid #334155',
+      padding: '1rem 1.5rem'
+    },
+    headerContent: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between'
+    },
+    headerLeft: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.75rem'
+    },
+    iconContainer: {
+      padding: '0.5rem',
+      background: '#f97316',
+      borderRadius: '0.5rem'
+    },
+    title: {
+      fontSize: '1.25rem',
+      fontWeight: 'bold',
+      margin: 0
+    },
+    subtitle: {
+      fontSize: '0.875rem',
+      color: '#cbd5e1',
+      margin: 0
+    },
+    settingsButton: {
+      padding: '0.5rem',
+      background: 'transparent',
+      border: 'none',
+      borderRadius: '0.5rem',
+      color: 'white',
+      cursor: 'pointer',
+      transition: 'background-color 0.2s'
+    },
+    settingsPanel: {
+      background: '#374151',
+      borderBottom: '1px solid #4b5563',
+      padding: '1rem'
+    },
+    settingsGroup: {
+      marginBottom: '1rem'
+    },
+    label: {
+      display: 'flex',
+      alignItems: 'center',
+      fontSize: '0.875rem',
+      fontWeight: '500',
+      marginBottom: '0.5rem',
+      gap: '0.5rem'
+    },
+    textarea: {
+      width: '100%',
+      padding: '0.75rem',
+      background: '#4b5563',
+      border: '1px solid #6b7280',
+      borderRadius: '0.5rem',
+      color: 'white',
+      fontSize: '0.875rem',
+      fontFamily: 'monospace',
+      resize: 'vertical',
+      outline: 'none',
+      transition: 'border-color 0.2s, box-shadow 0.2s'
+    },
+    helperText: {
+      fontSize: '0.75rem',
+      color: '#9ca3af',
+      marginTop: '0.25rem'
+    },
+    chatArea: {
+      flex: 1,
+      overflowY: 'auto',
+      padding: '1rem 1.5rem',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1rem'
+    },
+    messageContainer: {
+      display: 'flex'
+    },
+    userMessageContainer: {
+      justifyContent: 'flex-end'
+    },
+    botMessageContainer: {
+      justifyContent: 'flex-start'
+    },
+    message: {
+      maxWidth: '70%',
+      padding: '0.75rem 1rem',
+      borderRadius: '1rem',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+    },
+    userMessage: {
+      background: '#f97316',
+      color: 'white'
+    },
+    botMessage: {
+      background: '#374151',
+      color: '#f1f5f9'
+    },
+    messageText: {
+      fontSize: '0.875rem',
+      lineHeight: '1.5',
+      margin: 0,
+      whiteSpace: 'pre-wrap'
+    },
+    timestamp: {
+      fontSize: '0.75rem',
+      marginTop: '0.5rem',
+      opacity: 0.7
+    },
+    loadingContainer: {
+      display: 'flex',
+      justifyContent: 'flex-start'
+    },
+    loadingMessage: {
+      background: '#374151',
+      color: '#f1f5f9',
+      padding: '0.75rem 1rem',
+      borderRadius: '1rem',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+    },
+    loadingDots: {
+      display: 'flex',
+      gap: '0.5rem'
+    },
+    dot: {
+      width: '8px',
+      height: '8px',
+      background: '#9ca3af',
+      borderRadius: '50%',
+      animation: 'bounce 1.4s infinite ease-in-out'
+    },
+    inputArea: {
+      background: 'rgba(30, 41, 59, 0.5)',
+      backdropFilter: 'blur(8px)',
+      borderTop: '1px solid #334155',
+      padding: '1rem 1.5rem'
+    },
+    inputContainer: {
+      display: 'flex',
+      alignItems: 'flex-end',
+      gap: '0.75rem'
+    },
+    inputWrapper: {
+      flex: 1,
+      position: 'relative'
+    },
+    input: {
+      width: '100%',
+      padding: '0.75rem 1rem',
+      background: '#374151',
+      border: '1px solid #4b5563',
+      borderRadius: '0.75rem',
+      color: 'white',
+      resize: 'none',
+      outline: 'none',
+      maxHeight: '8rem',
+      minHeight: '2.5rem',
+      transition: 'border-color 0.2s, box-shadow 0.2s'
+    },
+    sendButton: {
+      padding: '0.75rem',
+      background: '#f97316',
+      border: 'none',
+      borderRadius: '0.75rem',
+      color: 'white',
+      cursor: 'pointer',
+      transition: 'background-color 0.2s',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+    },
+    sendButtonDisabled: {
+      opacity: 0.5,
+      cursor: 'not-allowed'
+    },
+    instructions: {
+      fontSize: '0.75rem',
+      color: '#9ca3af',
+      textAlign: 'center',
+      marginTop: '0.5rem'
+    }
+  };
+
+  // Add CSS animations
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes bounce {
+        0%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-10px); }
+      }
+      .bounce-1 { animation-delay: -0.32s; }
+      .bounce-2 { animation-delay: -0.16s; }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+
+  return (
+    <div style={styles.container}>
+      {/* Header */}
+      <div style={styles.header}>
+        <div style={styles.headerContent}>
+          <div style={styles.headerLeft}>
+            <div style={styles.iconContainer}>
+              <BikeIcon />
+            </div>
+            <div>
+              <h1 style={styles.title}>RoadRider AI</h1>
+              <p style={styles.subtitle}>Your Biker Tour Guide</p>
+            </div>
+          </div>
+          <button
+            style={{
+              ...styles.settingsButton,
+              backgroundColor: showSettings ? '#4b5563' : 'transparent'
+            }}
+            onMouseEnter={(e) => {
+              if (!showSettings) e.target.style.backgroundColor = '#374151';
+            }}
+            onMouseLeave={(e) => {
+              if (!showSettings) e.target.style.backgroundColor = 'transparent';
+            }}
+            onClick={() => setShowSettings(!showSettings)}
+          >
+            <SettingsIcon />
+          </button>
+        </div>
+      </div>
+
+      {/* Settings Panel */}
+      {showSettings && (
+        <div style={styles.settingsPanel}>
+          <div style={styles.settingsGroup}>
+            <label style={styles.label}>
+              <DatabaseIcon />
+              Knowledge Base & Persona
+            </label>
+            <textarea
+              value={knowledgeBase}
+              onChange={(e) => setKnowledgeBase(e.target.value)}
+              rows={8}
+              style={styles.textarea}
+              placeholder="Define the AI's persona and knowledge base..."
+              onFocus={(e) => {
+                e.target.style.borderColor = '#f97316';
+                e.target.style.boxShadow = '0 0 0 2px rgba(249, 115, 22, 0.2)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#6b7280';
+                e.target.style.boxShadow = 'none';
+              }}
+            />
+            <p style={styles.helperText}>
+              Customize the AI's personality and knowledge to fit your specific use case
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Chat Messages */}
+      <div style={styles.chatArea}>
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            style={{
+              ...styles.messageContainer,
+              ...(message.sender === 'user' ? styles.userMessageContainer : styles.botMessageContainer)
+            }}
+          >
+            <div
+              style={{
+                ...styles.message,
+                ...(message.sender === 'user' ? styles.userMessage : styles.botMessage)
+              }}
+            >
+              <p style={styles.messageText}>{message.text}</p>
+              <div style={{
+                ...styles.timestamp,
+                color: message.sender === 'user' ? 'rgba(255, 255, 255, 0.7)' : '#9ca3af'
+              }}>
+                {message.timestamp}
+              </div>
+            </div>
+          </div>
+        ))}
+        
+        {isLoading && (
+          <div style={styles.loadingContainer}>
+            <div style={styles.loadingMessage}>
+              <div style={styles.loadingDots}>
+                <div style={styles.dot}></div>
+                <div style={{...styles.dot}} className="bounce-1"></div>
+                <div style={{...styles.dot}} className="bounce-2"></div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div style={styles.inputArea}>
+        <div style={styles.inputContainer}>
+          <div style={styles.inputWrapper}>
+            <textarea
+              ref={textareaRef}
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask about scenic routes, biker-friendly stops, or adventure planning..."
+              style={styles.input}
+              rows={1}
+              disabled={isLoading}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#f97316';
+                e.target.style.boxShadow = '0 0 0 2px rgba(249, 115, 22, 0.2)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#4b5563';
+                e.target.style.boxShadow = 'none';
+              }}
+            />
+          </div>
+          <button
+            onClick={sendMessage}
+            disabled={!inputMessage.trim() || isLoading}
+            style={{
+              ...styles.sendButton,
+              ...((!inputMessage.trim() || isLoading) ? styles.sendButtonDisabled : {})
+            }}
+            onMouseEnter={(e) => {
+              if (!(!inputMessage.trim() || isLoading)) {
+                e.target.style.backgroundColor = '#ea580c';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!(!inputMessage.trim() || isLoading)) {
+                e.target.style.backgroundColor = '#f97316';
+              }
+            }}
+          >
+            <SendIcon />
+          </button>
+        </div>
+        <p style={styles.instructions}>
+          Press Enter to send • Shift+Enter for new line
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default App;
