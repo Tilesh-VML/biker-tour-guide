@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-// BMW-themed icons
+// Lucide React icons as inline SVGs since the package might not be loading
 const BikeIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <circle cx="18.5" cy="17.5" r="3.5"/>
@@ -38,7 +38,7 @@ const App = () => {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "🏍️ Welcome to BMW Motorrad AI Tour Manager! I'm here to help you plan your first 200-300 km touring adventure. Let's make your ride memorable and safe. What type of scenery interests you most — mountains, coast, or open plains?",
+      text: "🏍️ Hey there, fellow rider! I'm your personal biker tour guide. Whether you're looking for scenic routes, biker-friendly stops, or adventure planning, I'm here to help. What kind of riding adventure are you planning?",
       sender: 'bot',
       timestamp: new Date().toLocaleTimeString()
     }
@@ -46,39 +46,7 @@ const App = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [knowledgeBase, setKnowledgeBase] = useState(`You are BMW Motorrad AI Tour Manager, a friendly, efficient, and knowledgeable digital motorcycle trip planner specializing in helping new touring riders plan their first 200-300 km ride.
-
-You make trip planning quick, easy, and confidence-inspiring by suggesting scenic GPX routes, providing packing lists, and recommending BMW Motorrad accessories with direct links and discounts.
-
-You know predefined GPX routes such as: 
-- Mountain Views (Clarens -> Golden Gate Highlands NP, 250 km, ClarensMountainViews_250km.gpx)
-- Coastal Cruise (Knysna -> Plettenberg Bay, 200 km, GardenRoute_Coastal_200km.gpx)  
-- Open Plains (Oudtshoorn -> Calitzdorp, 220 km, Karoo_Explorer_220km.gpx)
-
-You also know associated POIs like coffee stops (The Courtyard Cafe, Diesel & Creme), landmarks (God's Window, Chapman's Peak, Golden Gate Highlands NP lookouts), fuel stops (~100 km intervals, e.g., Clarens Engen), and BMW Motorrad dealerships/service points (e.g., BMW Motorrad George).
-
-You provide a standard 2-day packing list including:
-- Rider essentials: license, registration, medical aid card, first-aid kit, tire repair kit, small tool kit
-- Clothing: waterproof riding gear, gloves, helmet, boots, oversuit, base layers, casual wear
-- Personal items: sunscreen, lip balm, sunglasses, toiletries, medication, water, snacks
-- Electronics: phone, charger, power bank, GPS
-
-You recommend BMW Motorrad accessories such as:
-- Storage: BMW Vario Top Case for F 850 GS, BMW Soft Luggage Tank Bag for R 1250 R, BMW Side Panniers for R 1250 GS Adventure
-- Comfort: BMW Comfort Seat for R 1250 RT, BMW Heated Grips
-- Navigation: BMW Motorrad Navigator VI
-
-Accessory links: 
-- https://www.bmw-motorrad.co.za/en/individualisation/accessories-stage.html#/productFilter-modelCodes=0F21
-- https://www.bmw-motorrad.co.za/en/individualisation/accessories-finder.html#/section-even-more-accessories
-- https://www.bmw-motorrad.co.za/en/individualisation/soft-luggage-solutions.html#/section-your-lifestyle-your-collection
-- https://www.bmw-motorrad.co.za/en/individualisation/navigation-and-communication.html
-
-Always capture user preferences (location, rider experience, bike model, preferred scenery, trip duration, group size) before suggesting a route.
-
-Your tone is friendly, concise, and brand-aligned with BMW's #MakeLifeARide ethos. Ask short, clear questions, then provide one tailored route with GPX file, relevant POIs, a packing list, and one BMW Motorrad accessory recommendation with a direct link.
-
-Safety and rider confidence are top priorities.`);
+  const [knowledgeBase, setKnowledgeBase] = useState( `You are BMW Motorrad AI Tour Manager, a friendly, efficient, and knowledgeable digital motorcycle trip planner specializing in helping new touring riders plan their first 200-300 km ride.\n You make trip planning quick, easy, and confidence-inspiring by suggesting scenic GPX routes, providing packing lists, and recommending BMW Motorrad accessories with direct links and discounts.\n You know predefined GPX routes such as: Mountain Views (Clarens -> Golden Gate Highlands NP, 250 km, ClarensMountainViews_250km.gpx), Coastal Cruise (Knysna -> Plettenberg Bay, 200 km, GardenRoute_Coastal_200km.gpx), and Open Plains (Oudtshoorn -> Calitzdorp, 220 km, Karoo_Explorer_220km.gpx).\n You also know associated POIs like coffee stops (The Courtyard Cafe, Diesel & Creme), landmarks (God's Window, Chapman's Peak, Golden Gate Highlands NP lookouts), fuel stops (~100 km intervals, e.g., Clarens Engen), and BMW Motorrad dealerships/service points (e.g., BMW Motorrad George).\n You provide a standard 2-day packing list including rider essentials (license, registration, medical aid card, first-aid kit, tire repair kit, small tool kit), clothing (waterproof riding gear, gloves, helmet, boots, oversuit, base layers, casual wear), personal items (sunscreen, lip balm, sunglasses, toiletries, medication, water, snacks), and electronics (phone, charger, power bank, GPS).\n You recommend BMW Motorrad accessories such as storage (BMW Vario Top Case for F 850 GS, BMW Soft Luggage Tank Bag for R 1250 R, BMW Side Panniers for R 1250 GS Adventure), comfort (BMW Comfort Seat for R 1250 RT, BMW Heated Grips), and navigation (BMW Motorrad Navigator VI), with links: https://www.bmw-motorrad.co.za/en/individualisation/accessories-stage.html#/productFilter-modelCodes=0F21, https://www.bmw-motorrad.co.za/en/individualisation/accessories-finder.html#/section-even-more-accessories, https://www.bmw-motorrad.co.za/en/individualisation/soft-luggage-solutions.html#/section-your-lifestyle-your-collection, https://www.bmw-motorrad.co.za/en/individualisation/navigation-and-communication.html.\n Always capture user preferences (location, rider experience, bike model, preferred scenery, trip duration, group size) before suggesting a route.\n Your tone is friendly, concise, and brand-aligned with BMW's #MakeLifeARide ethos.\n Ask short, clear questions, then provide one tailored route with GPX file, relevant POIs, a packing list, and one BMW Motorrad accessory recommendation with a direct link.\n Safety and rider confidence are top priorities.\n Example: User: "I want to plan my first long ride." AI: "Great! What scenery do you prefer — mountains, coast, or open plains?" User: "Mountains, and I'm a new rider." AI: "Perfect! How about a scenic 250 km loop through the Drakensberg foothills? I'll send you the GPX route, a packing list, and a great coffee stop."` );
 
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
@@ -137,9 +105,9 @@ Safety and rider confidence are top priorities.`);
             }]
           }],
           generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
+            temperature: 0.9,
+            topK: 1,
+            topP: 1,
             maxOutputTokens: 2048,
           },
           safetySettings: [
@@ -164,18 +132,11 @@ Safety and rider confidence are top priorities.`);
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error Response:', errorText);
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        throw new Error(`API request failed: ${response.statusText}`);
       }
 
       const data = await response.json();
-      
-      if (!data.candidates || data.candidates.length === 0) {
-        throw new Error('No response generated from API');
-      }
-
-      const botResponse = data.candidates[0]?.content?.parts?.[0]?.text || "I'm having trouble processing that request. Could you try rephrasing?";
+      const botResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm having trouble processing that request. Could you try rephrasing?";
 
       const botMessage = {
         id: messages.length + 2,
@@ -211,14 +172,14 @@ Safety and rider confidence are top priorities.`);
       display: 'flex',
       flexDirection: 'column',
       height: '100vh',
-      background: 'linear-gradient(to bottom right, #1a1a2e, #16213e)',
+      background: 'linear-gradient(to bottom right, #0f172a, #1e293b)',
       color: 'white',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     },
     header: {
-      background: 'rgba(22, 33, 62, 0.8)',
-      backdropFilter: 'blur(12px)',
-      borderBottom: '1px solid #3a4a6b',
+      background: 'rgba(30, 41, 59, 0.5)',
+      backdropFilter: 'blur(8px)',
+      borderBottom: '1px solid #334155',
       padding: '1rem 1.5rem'
     },
     headerContent: {
@@ -229,40 +190,36 @@ Safety and rider confidence are top priorities.`);
     headerLeft: {
       display: 'flex',
       alignItems: 'center',
-      gap: '1rem'
+      gap: '0.75rem'
     },
     iconContainer: {
-      padding: '0.75rem',
-      background: 'linear-gradient(135deg, #0066cc, #004499)',
-      borderRadius: '0.75rem',
-      boxShadow: '0 4px 12px rgba(0, 102, 204, 0.3)'
+      padding: '0.5rem',
+      background: '#f97316',
+      borderRadius: '0.5rem'
     },
     title: {
-      fontSize: '1.5rem',
+      fontSize: '1.25rem',
       fontWeight: 'bold',
-      margin: 0,
-      color: '#ffffff',
-      textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+      margin: 0
     },
     subtitle: {
-      fontSize: '0.9rem',
-      color: '#b8c5d6',
+      fontSize: '0.875rem',
+      color: '#cbd5e1',
       margin: 0
     },
     settingsButton: {
-      padding: '0.6rem',
+      padding: '0.5rem',
       background: 'transparent',
       border: 'none',
       borderRadius: '0.5rem',
       color: 'white',
       cursor: 'pointer',
-      transition: 'all 0.2s ease'
+      transition: 'background-color 0.2s'
     },
     settingsPanel: {
-      background: 'rgba(26, 32, 58, 0.9)',
-      backdropFilter: 'blur(8px)',
-      borderBottom: '1px solid #3a4a6b',
-      padding: '1.5rem'
+      background: '#374151',
+      borderBottom: '1px solid #4b5563',
+      padding: '1rem'
     },
     settingsGroup: {
       marginBottom: '1rem'
@@ -270,38 +227,36 @@ Safety and rider confidence are top priorities.`);
     label: {
       display: 'flex',
       alignItems: 'center',
-      fontSize: '0.9rem',
-      fontWeight: '600',
-      marginBottom: '0.7rem',
-      gap: '0.5rem',
-      color: '#e2e8f0'
+      fontSize: '0.875rem',
+      fontWeight: '500',
+      marginBottom: '0.5rem',
+      gap: '0.5rem'
     },
     textarea: {
       width: '100%',
-      padding: '1rem',
-      background: 'rgba(22, 33, 62, 0.6)',
-      border: '2px solid #3a4a6b',
-      borderRadius: '0.75rem',
+      padding: '0.75rem',
+      background: '#4b5563',
+      border: '1px solid #6b7280',
+      borderRadius: '0.5rem',
       color: 'white',
-      fontSize: '0.85rem',
-      fontFamily: '"SF Mono", "Monaco", "Consolas", monospace',
+      fontSize: '0.875rem',
+      fontFamily: 'monospace',
       resize: 'vertical',
       outline: 'none',
-      transition: 'all 0.3s ease',
-      lineHeight: '1.5'
+      transition: 'border-color 0.2s, box-shadow 0.2s'
     },
     helperText: {
-      fontSize: '0.8rem',
-      color: '#94a3b8',
-      marginTop: '0.5rem'
+      fontSize: '0.75rem',
+      color: '#9ca3af',
+      marginTop: '0.25rem'
     },
     chatArea: {
       flex: 1,
       overflowY: 'auto',
-      padding: '1.5rem',
+      padding: '1rem 1.5rem',
       display: 'flex',
       flexDirection: 'column',
-      gap: '1.2rem'
+      gap: '1rem'
     },
     messageContainer: {
       display: 'flex'
@@ -313,31 +268,28 @@ Safety and rider confidence are top priorities.`);
       justifyContent: 'flex-start'
     },
     message: {
-      maxWidth: '75%',
-      padding: '1rem 1.25rem',
-      borderRadius: '1.25rem',
-      boxShadow: '0 6px 16px rgba(0, 0, 0, 0.15)',
-      backdropFilter: 'blur(8px)'
+      maxWidth: '70%',
+      padding: '0.75rem 1rem',
+      borderRadius: '1rem',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
     },
     userMessage: {
-      background: 'linear-gradient(135deg, #0066cc, #004499)',
-      color: 'white',
-      boxShadow: '0 6px 20px rgba(0, 102, 204, 0.3)'
+      background: '#f97316',
+      color: 'white'
     },
     botMessage: {
-      background: 'rgba(30, 41, 59, 0.8)',
-      color: '#f1f5f9',
-      border: '1px solid rgba(148, 163, 184, 0.2)'
+      background: '#374151',
+      color: '#f1f5f9'
     },
     messageText: {
-      fontSize: '0.9rem',
-      lineHeight: '1.6',
+      fontSize: '0.875rem',
+      lineHeight: '1.5',
       margin: 0,
       whiteSpace: 'pre-wrap'
     },
     timestamp: {
       fontSize: '0.75rem',
-      marginTop: '0.6rem',
+      marginTop: '0.5rem',
       opacity: 0.7
     },
     loadingContainer: {
@@ -345,11 +297,11 @@ Safety and rider confidence are top priorities.`);
       justifyContent: 'flex-start'
     },
     loadingMessage: {
-      background: 'rgba(30, 41, 59, 0.8)',
+      background: '#374151',
       color: '#f1f5f9',
-      padding: '1rem 1.25rem',
-      borderRadius: '1.25rem',
-      boxShadow: '0 6px 16px rgba(0, 0, 0, 0.15)'
+      padding: '0.75rem 1rem',
+      borderRadius: '1rem',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
     },
     loadingDots: {
       display: 'flex',
@@ -358,20 +310,20 @@ Safety and rider confidence are top priorities.`);
     dot: {
       width: '8px',
       height: '8px',
-      background: '#0066cc',
+      background: '#9ca3af',
       borderRadius: '50%',
       animation: 'bounce 1.4s infinite ease-in-out'
     },
     inputArea: {
-      background: 'rgba(22, 33, 62, 0.8)',
-      backdropFilter: 'blur(12px)',
-      borderTop: '1px solid #3a4a6b',
-      padding: '1.5rem'
+      background: 'rgba(30, 41, 59, 0.5)',
+      backdropFilter: 'blur(8px)',
+      borderTop: '1px solid #334155',
+      padding: '1rem 1.5rem'
     },
     inputContainer: {
       display: 'flex',
       alignItems: 'flex-end',
-      gap: '1rem'
+      gap: '0.75rem'
     },
     inputWrapper: {
       flex: 1,
@@ -379,38 +331,36 @@ Safety and rider confidence are top priorities.`);
     },
     input: {
       width: '100%',
-      padding: '1rem 1.25rem',
-      background: 'rgba(30, 41, 59, 0.6)',
-      border: '2px solid #3a4a6b',
-      borderRadius: '1rem',
+      padding: '0.75rem 1rem',
+      background: '#374151',
+      border: '1px solid #4b5563',
+      borderRadius: '0.75rem',
       color: 'white',
       resize: 'none',
       outline: 'none',
-      maxHeight: '10rem',
-      minHeight: '3rem',
-      transition: 'all 0.3s ease',
-      fontSize: '0.9rem',
-      lineHeight: '1.5'
+      maxHeight: '8rem',
+      minHeight: '2.5rem',
+      transition: 'border-color 0.2s, box-shadow 0.2s'
     },
     sendButton: {
-      padding: '1rem',
-      background: 'linear-gradient(135deg, #0066cc, #004499)',
+      padding: '0.75rem',
+      background: '#f97316',
       border: 'none',
-      borderRadius: '1rem',
+      borderRadius: '0.75rem',
       color: 'white',
       cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      boxShadow: '0 6px 20px rgba(0, 102, 204, 0.3)'
+      transition: 'background-color 0.2s',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
     },
     sendButtonDisabled: {
       opacity: 0.5,
       cursor: 'not-allowed'
     },
     instructions: {
-      fontSize: '0.8rem',
-      color: '#94a3b8',
+      fontSize: '0.75rem',
+      color: '#9ca3af',
       textAlign: 'center',
-      marginTop: '0.8rem'
+      marginTop: '0.5rem'
     }
   };
 
@@ -420,7 +370,7 @@ Safety and rider confidence are top priorities.`);
     style.textContent = `
       @keyframes bounce {
         0%, 80%, 100% { transform: translateY(0); }
-        40% { transform: translateY(-12px); }
+        40% { transform: translateY(-10px); }
       }
       .bounce-1 { animation-delay: -0.32s; }
       .bounce-2 { animation-delay: -0.16s; }
@@ -439,17 +389,17 @@ Safety and rider confidence are top priorities.`);
               <BikeIcon />
             </div>
             <div>
-              <h1 style={styles.title}>BMW Motorrad AI Tour Manager</h1>
-              <p style={styles.subtitle}>#MakeLifeARide</p>
+              <h1 style={styles.title}>RoadRider AI</h1>
+              <p style={styles.subtitle}>Your Biker Tour Guide</p>
             </div>
           </div>
           <button
             style={{
               ...styles.settingsButton,
-              backgroundColor: showSettings ? 'rgba(58, 74, 107, 0.6)' : 'transparent'
+              backgroundColor: showSettings ? '#4b5563' : 'transparent'
             }}
             onMouseEnter={(e) => {
-              if (!showSettings) e.target.style.backgroundColor = 'rgba(58, 74, 107, 0.4)';
+              if (!showSettings) e.target.style.backgroundColor = '#374151';
             }}
             onMouseLeave={(e) => {
               if (!showSettings) e.target.style.backgroundColor = 'transparent';
@@ -467,25 +417,25 @@ Safety and rider confidence are top priorities.`);
           <div style={styles.settingsGroup}>
             <label style={styles.label}>
               <DatabaseIcon />
-              BMW Motorrad Knowledge Base & Persona
+              Knowledge Base & Persona
             </label>
             <textarea
               value={knowledgeBase}
               onChange={(e) => setKnowledgeBase(e.target.value)}
-              rows={12}
+              rows={8}
               style={styles.textarea}
-              placeholder="Define the BMW Motorrad AI's persona and knowledge base..."
+              placeholder="Define the AI's persona and knowledge base..."
               onFocus={(e) => {
-                e.target.style.borderColor = '#0066cc';
-                e.target.style.boxShadow = '0 0 0 3px rgba(0, 102, 204, 0.2)';
+                e.target.style.borderColor = '#f97316';
+                e.target.style.boxShadow = '0 0 0 2px rgba(249, 115, 22, 0.2)';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = '#3a4a6b';
+                e.target.style.borderColor = '#6b7280';
                 e.target.style.boxShadow = 'none';
               }}
             />
             <p style={styles.helperText}>
-              Customize the BMW Motorrad AI's personality and knowledge to fit your touring needs
+              Customize the AI's personality and knowledge to fit your specific use case
             </p>
           </div>
         </div>
@@ -510,7 +460,7 @@ Safety and rider confidence are top priorities.`);
               <p style={styles.messageText}>{message.text}</p>
               <div style={{
                 ...styles.timestamp,
-                color: message.sender === 'user' ? 'rgba(255, 255, 255, 0.7)' : '#94a3b8'
+                color: message.sender === 'user' ? 'rgba(255, 255, 255, 0.7)' : '#9ca3af'
               }}>
                 {message.timestamp}
               </div>
@@ -542,16 +492,16 @@ Safety and rider confidence are top priorities.`);
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Tell me about your dream touring adventure..."
+              placeholder="Ask about scenic routes, biker-friendly stops, or adventure planning..."
               style={styles.input}
               rows={1}
               disabled={isLoading}
               onFocus={(e) => {
-                e.target.style.borderColor = '#0066cc';
-                e.target.style.boxShadow = '0 0 0 3px rgba(0, 102, 204, 0.2)';
+                e.target.style.borderColor = '#f97316';
+                e.target.style.boxShadow = '0 0 0 2px rgba(249, 115, 22, 0.2)';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = '#3a4a6b';
+                e.target.style.borderColor = '#4b5563';
                 e.target.style.boxShadow = 'none';
               }}
             />
@@ -565,14 +515,12 @@ Safety and rider confidence are top priorities.`);
             }}
             onMouseEnter={(e) => {
               if (!(!inputMessage.trim() || isLoading)) {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 8px 25px rgba(0, 102, 204, 0.4)';
+                e.target.style.backgroundColor = '#ea580c';
               }
             }}
             onMouseLeave={(e) => {
               if (!(!inputMessage.trim() || isLoading)) {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 6px 20px rgba(0, 102, 204, 0.3)';
+                e.target.style.backgroundColor = '#f97316';
               }
             }}
           >
